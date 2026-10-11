@@ -1,0 +1,17 @@
+{
+  "name": "Diário de Treino",
+  "short_name": "Treino",
+  "description": "Fichas, treino do dia, calendário, medidas e evolução.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1016",
+  "theme_color": "#0d1016",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

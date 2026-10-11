@@ -1,0 +1,48 @@
+DIÁRIO DE TREINO — COMO PUBLICAR
+================================
+
+Arquivos desta pasta
+- index.html ............ o app
+- config.js ............. configuração do seu Firebase e e-mail do administrador
+- firestore.rules ....... regras de segurança do banco (copiar e colar no Firebase)
+- ex/ ................... ilustrações dos exercícios
+- manifest.webmanifest, sw.js, icon-*.png ... ícone e instalação no celular
+
+1) FIREBASE (login e banco de dados) — console.firebase.google.com
+   a. Criar projeto (pode desativar o Google Analytics).
+   b. Ícone </> (Web) > registrar app > copie o bloco firebaseConfig para o config.js.
+   c. Criação > Authentication > Vamos começar > ative "E-mail/senha".
+   d. Criação > Firestore Database > Criar banco de dados > local southamerica-east1 > modo de produção.
+   e. Firestore Database > aba Regras > apague tudo, cole o conteúdo de firestore.rules > Publicar.
+
+2) GEMINI (IA) — aistudio.google.com/apikey
+   Criar chave de API. Guarde para colar no app (passo 5).
+
+3) PUBLICAR O SITE — app.netlify.com/drop
+   Crie uma conta grátis e arraste ESTA PASTA inteira para a página.
+   Em Site configuration > Change site name, escolha um nome (ex.: meu-diario-treino).
+   O endereço fica: https://meu-diario-treino.netlify.app
+   Para atualizar no futuro: Deploys > arraste a pasta nova.
+
+4) AUTORIZAR O ENDEREÇO NO FIREBASE
+   Authentication > Configurações > Domínios autorizados > Adicionar domínio
+   > meu-diario-treino.netlify.app
+
+5) PRIMEIRO ACESSO (administrador)
+   Abra o site > Criar conta com o e-mail de administrador do config.js.
+   Confirme o e-mail pelo link recebido > "Já confirmei".
+   Toque no seu círculo com as iniciais (canto superior) > Configurar IA > cole a chave do Gemini > Testar e salvar.
+
+6) OUTRAS PESSOAS
+   Mande o endereço do site. A pessoa cria a conta e fica "aguardando aprovação".
+   Você aprova em: círculo com iniciais > Usuários > Aprovar.
+   Cada pessoa vê somente os próprios treinos.
+
+7) INSTALAR NO CELULAR
+   Android (Chrome): menu ⋮ > Adicionar à tela inicial / Instalar app.
+   iPhone (Safari): botão Compartilhar > Adicionar à Tela de Início.
+
+Observações
+- Tudo no plano gratuito, sem cartão. Fotos próprias são reduzidas e salvas no banco; vídeos não são aceitos no plano gratuito.
+- A chave do Gemini fica no banco e só é lida por usuários aprovados.
+- Ilustrações: Everkinetic (CC BY-SA 4.0) e Free Exercise DB (domínio público).

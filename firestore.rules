@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+
+    // TROQUE o e-mail abaixo se o administrador for outro.
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email == 'fnrepresentacoes10@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    function approved() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'aprovado';
+    }
+
+    // Cadastro de cada pessoa (nome, e-mail, status)
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.status == 'pendente'
+        && request.resource.data.email == request.auth.token.email;
+      allow update: if isAdmin()
+        || (signedIn() && request.auth.uid == uid
+            && request.resource.data.status == resource.data.status);
+      allow delete: if isAdmin();
+
+      // Treinos, fichas, medidas e fotos: só o dono, e só depois de aprovado
+      match /{rest=**} {
+        allow read, write: if signedIn() && request.auth.uid == uid && (approved() || isAdmin());
+      }
+    }
+
+    // Chave do Gemini: usuários aprovados leem, só o administrador altera
+    match /config/{doc} {
+      allow read: if approved() || isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}
