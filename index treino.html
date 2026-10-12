@@ -630,7 +630,7 @@ function viewFichas(){
     <div class="rhead"><span class="plate"></span><div class="grow"><h3>${esc(r.name)}</h3>${r.exemplo?'<span class="chip ex">Exemplo · edite com a sua ficha</span>':""}</div>
       <div class="days">${DIAS.map((d,i)=>`<span class="${(r.days||[]).includes(i)?"on":""}">${d}</span>`).join("")}</div></div>
     ${(r.exercises||[]).map((e,j)=>`<button class="exrow" data-act="editEx" data-r="${r.id}" data-x="${e.id}">${thumb(e)}<span class="grow"><span class="t">${esc(e.name)}</span><br><span class="s num">${esc(e.sets||"–")} × ${esc(e.reps||"–")}${e.load!=null&&e.load!==""?` · ${fmt(num(e.load))} kg`:""}${e.group?` · ${esc(e.group)}`:""}</span></span><span class="muted">›</span></button>`).join("")||`<div class="exrow muted">Sem exercícios ainda.</div>`}
-    <div class="rfoot"><button class="btn sm primary" data-act="newEx" data-r="${r.id}">+ Exercício</button><button class="btn sm" data-act="editRoutine" data-r="${r.id}">Editar ficha</button><span class="grow"></span><button class="btn sm ghost" data-act="start" data-id="${r.id}">Iniciar ›</button></div>
+    <div class="rfoot"><button class="btn sm primary" data-act="newEx" data-r="${r.id}">+ Exercício</button><button class="btn sm" data-act="editRoutine" data-r="${r.id}">Editar ficha</button><span class="grow"></span><button class="btn sm danger" data-act="quickDelRoutine" data-r="${r.id}" aria-label="Excluir ficha"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button><button class="btn sm ghost" data-act="start" data-id="${r.id}">Iniciar ›</button></div>
   </section>`).join("")}
   <button class="btn block" data-act="newRoutine">+ Nova ficha</button>`;
 }
@@ -915,6 +915,16 @@ const A={
   evoMode(b){S.evoMode=b.dataset.m;render()},
   evoUnit(b){S.evoUnit=b.dataset.u;render()},
   account(){accountSheet()},
+  async quickDelRoutine(b){if(!armed(b))return;const r=routineById(b.dataset.r);if(!r)return;
+    if(await dbWrite(()=>db.collection("routines").doc(r.id).delete(),"Ficha excluída"))(r.exercises||[]).forEach(e=>{if(e.mediaId)assets&&assets.delete(e.mediaId)})},
+  async wipe(b){if(!armed(b))return;const w=b.dataset.w;const list={routines:S.routines,sessions:S.sessions,measures:S.measures}[w].slice();
+    if(!list.length){toast("Não há nada para apagar.");return}
+    b.disabled=true;b.textContent="Apagando…";
+    const ok=await dbWrite(async()=>{for(const d of list)await db.collection(w).doc(d.id).delete();
+      if(w==="routines")list.forEach(r=>(r.exercises||[]).forEach(e=>{if(e.mediaId)assets&&assets.delete(e.mediaId)}));
+      if(w==="sessions"){await db.doc("ai/analise").delete();S.aiAnalysis=null}},
+      {routines:"Fichas apagadas",sessions:"Histórico de treinos apagado",measures:"Medidas apagadas"}[w]);
+    if(ok)closeSheet();else{b.disabled=false}},
   usersSheet(){usersSheet()},
   setUser(b){const id=b.dataset.id,st=b.dataset.s;b.disabled=true;withTimeout(FS.updateDoc(FS.doc(fsdb,"users",id),{status:st,[st==="aprovado"?"aprovadoEm":"bloqueadoEm"]:Date.now()})).then(()=>toast(st==="aprovado"?"Acesso aprovado":"Acesso bloqueado"))},
   aiConfig(){aiConfigSheet()},
@@ -1101,6 +1111,10 @@ function accountSheet(){
     <div class="card stack" style="gap:2px"><b>${esc((ME&&ME.nome)||"Sem nome")}</b><span class="muted">${esc(u&&u.email)}</span>${IS_ADMIN?'<span class="pill ok" style="align-self:flex-start;margin-top:6px">Administrador</span>':""}</div>
     ${IS_ADMIN?`<button class="btn block" data-act="usersSheet">Usuários${S.pendingCount?` <span class="pill warn">${S.pendingCount} aguardando</span>`:""}</button>
       <button class="btn block" data-act="aiConfig">Configurar IA (Gemini)</button>`:""}
+    <div class="card stack"><b>Limpar dados de teste</b><span class="muted" style="font-size:13px">Apaga só os seus dados. Toque duas vezes para confirmar. Não dá para desfazer.</span>
+      <button class="btn danger block" data-act="wipe" data-w="routines">Apagar todas as fichas (${S.routines.length})</button>
+      <button class="btn danger block" data-act="wipe" data-w="sessions">Apagar histórico de treinos (${S.sessions.length})</button>
+      <button class="btn danger block" data-act="wipe" data-w="measures">Apagar medidas (${S.measures.length})</button></div>
     <button class="btn danger block" data-act="logout">Sair da conta</button>
     <button class="btn ghost block" data-act="closeSheet">Fechar</button>`);
 }
